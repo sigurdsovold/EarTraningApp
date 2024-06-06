@@ -135,11 +135,13 @@ class EarTrainerApp(tk.Tk):
 
     def show_game_interface(self):
         self.clear_frame(self.main_frame)
+        self.create_button(self.main_frame, "Back to Main Menu", lambda: (self.show_main_menu())).pack(pady=20)
         self.input_frame = None
         self.answer_frame = None
         self.score_frame = None
         self.setup_frames()
         self.setup_keyboard_layout()
+        
 
     def setup_frames(self):
         # Clear existing frames if they exist
@@ -184,8 +186,8 @@ class EarTrainerApp(tk.Tk):
         self.answers = []
         for _ in range(backend.get_number_of_notes()):  # Assuming there are 5 inputs needed
             # Frame to hold both an input and answer entry
-            entry_frame = tk.Frame(self.input_frame)
-            entry_frame.pack(side=tk.LEFT, padx=5)
+            entry_frame = tk.Frame(self.input_frame, bg="gray", highlightbackground="black", highlightthickness=1)
+            entry_frame.pack(side="left", padx=5, pady=5)
 
             # Create input entry
             input_entry = tk.Entry(entry_frame, width=5, font=('Arial', 12), justify='center')
@@ -198,21 +200,19 @@ class EarTrainerApp(tk.Tk):
             answer_entry.pack(pady=(5, 0))  # Pad only above the entry
             self.answers.append(answer_entry)
 
-        self.backspace_button = tk.Button(self.input_frame, text="←", width=10, font=('Arial', 12), command=self.backspace_input)
+        self.backspace_button = self.create_button(self.input_frame, "←", self.backspace_input, width=10, pady=0)
         self.backspace_button.pack(side=tk.LEFT, padx=(10, 0))
 
-        self.check_button = tk.Button(self.input_frame, text="Check", width=10, font=('Arial', 12), command=self.check_answers)
+        self.play_button = self.create_button(self.input_frame, "Replay Audio", backend.play_audio)
+        self.play_button.pack(pady=10)
+
+        self.check_button = self.create_button(self.input_frame, "Check", self.check_answers, width=10)
         self.check_button.pack(side=tk.LEFT)
         self.check_button.pack_forget()  # Initially hide the check button until inputs are valid
 
-
-        self.next_button = tk.Button(self.input_frame, text="Next", width=10, font=('Arial', 12), command=self.next)
+        self.next_button = self.create_button(self.input_frame, "Next", self.next, width=10)
         self.next_button.pack(side=tk.RIGHT, padx=0)
         self.next_button.pack_forget()  # Initially hide the next button
-        
-        self.play_button = tk.Button(self.input_frame, text="Play Again", command=backend.play_audio)
-
-        self.play_button.pack(pady=10)       
 
         self.create_score_display()  
 
@@ -286,10 +286,6 @@ class EarTrainerApp(tk.Tk):
 
     def update_points_for_next_level(self, points):
         self.next_level_points_label.config(text=f"Points for Next Level: {points}")
-
-
-
-
 
 
 
