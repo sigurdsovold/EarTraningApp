@@ -23,7 +23,7 @@ def midi_to_frequency(midi_note):
 
 def create_note(frequency, duration, sample_rate=44100, fade_in_duration=0.01, fade_out_duration=0.1):
     samples = np.arange(duration * sample_rate)
-    waveform = np.sin(2 * np.pi * frequency * samples / sample_rate)
+    waveform = 2 * np.abs(2 * (samples * frequency / sample_rate - np.floor(samples * frequency / sample_rate + 0.5)))
 
     # Calculate the number of samples for fade in and fade out
     fade_in_samples = int(fade_in_duration * sample_rate)
@@ -123,28 +123,34 @@ def apply_settings(intro_speed_entry, test_speed_entry, space_between_entry):
     # Save settings after making changes
     save_settings() 
 
-def generate_chord(key, duration, mode, sample_rate=44100):
+import numpy as np
+
+def generate_chord(key, target_duration, mode, sample_rate=44100):
     # Calculate frequencies for root, third, and fifth
     root_freq = midi_to_frequency(mode[0])
-   
     third_freq = midi_to_frequency(mode[2])  # Major third
-  
     fifth_freq = midi_to_frequency(mode[4])  # Perfect fifth
     
     # Time array
-    t = np.linspace(0, duration, int(sample_rate * duration), endpoint=False)
+    t = np.linspace(0, target_duration, int(sample_rate * target_duration), endpoint=False)
     
-    # Generate sine waves for each note
-    root_wave = np.sin(2 * np.pi * root_freq * t)
-    third_wave = np.sin(2 * np.pi * third_freq * t)
-    fifth_wave = np.sin(2 * np.pi * fifth_freq * t)
+    # Generate triangle waves for each note
+    root_wave = 2 * np.abs(2 * (t * root_freq - np.floor(t * root_freq + 0.5)))
+    third_wave = 2 * np.abs(2 * (t * third_freq - np.floor(t * third_freq + 0.5)))
+    fifth_wave = 2 * np.abs(2 * (t * fifth_freq - np.floor(t * fifth_freq + 0.5)))
     
     # Combine the waves
     chord_wave = root_wave + third_wave + fifth_wave
-    chord_wave = chord_wave * (32767 / np.max(np.abs(chord_wave)))  # Normalize volume
-    chord_wave = chord_wave.astype(np.int16)  # Convert to int16 format
+    
+    # Normalize volume
+    chord_wave = chord_wave * (32767 / np.max(np.abs(chord_wave)))
+    
+    # Convert to int16 format
+    chord_wave = chord_wave.astype(np.int16)
     
     return chord_wave
+
+
 
 def generate_solfege_map_for_root(root_note, note_range=36):
     # Base solfege sequence, repeating for multiple octaves
