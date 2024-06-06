@@ -191,31 +191,31 @@ class EarTrainingGame:
         return np.zeros(int(duration * sample_rate), dtype=np.int16)
 
     def list_to_audiofile(self, midi_test_notes_list, folder_name="test_file_folder", silence_duration=1.0):
-    	folder_name = "test_file_folder"
+        folder_name = "test_file_folder"
 
-    	chord_root_note = self.key + 60
-    	chord_waveform = generate_chord(chord_root_note, 2, self.mode, sample_rate=44100)
-	duration = self.difficulty["duration"]
-	print(midi_test_notes_list)
-	concatenated_waveform = np.array([], dtype=np.int16)
-	for midi_note in midi_test_notes_list:
-		frequency = midi_to_frequency(midi_note)
-	        note_waveform = create_note(frequency, duration)
-	        concatenated_waveform = np.concatenate((concatenated_waveform, note_waveform))
-	    
-	# Append silence between chord and test sequence
-	silence_waveform = self.generate_silence(silence_duration)
-	final_waveform = np.concatenate((chord_waveform, silence_waveform, concatenated_waveform))
-	
-	    # Reduce the amplitude by a factor of 4
-	    final_waveform = final_waveform * 0.1
-	
-	if not os.path.exists(folder_name):
-		os.makedirs(folder_name)
-	
-	filename = os.path.join(folder_name, "_".join(map(str, midi_test_notes_list)) + "_audiofile.wav")
-	wavfile.write(filename, 44100, final_waveform.astype(np.int16))
-    	return filename
+        chord_root_note = self.key + 60
+        chord_waveform = generate_chord(chord_root_note, 2, self.mode, sample_rate=44100)
+        duration = self.difficulty["duration"]
+        print(midi_test_notes_list)
+        concatenated_waveform = np.array([], dtype=np.int16)
+        for midi_note in midi_test_notes_list:
+            frequency = midi_to_frequency(midi_note)
+            note_waveform = create_note(frequency, duration)
+            concatenated_waveform = np.concatenate((concatenated_waveform, note_waveform))
+        
+        # Append silence between chord and test sequence
+        silence_waveform = self.generate_silence(silence_duration)
+        final_waveform = np.concatenate((chord_waveform, silence_waveform, concatenated_waveform))
+
+        # Reduce the amplitude by a factor of 4
+        final_waveform = final_waveform * 0.1
+
+        if not os.path.exists(folder_name):
+            os.makedirs(folder_name)
+
+        filename = os.path.join(folder_name, "_".join(map(str, midi_test_notes_list)) + "_audiofile.wav")
+        wavfile.write(filename, 44100, final_waveform.astype(np.int16))
+        return filename
 
     def string_to_list(self, midi_test_notes):
         midi_test_notes_list = [int(note) for note in midi_test_notes.split('_')]
