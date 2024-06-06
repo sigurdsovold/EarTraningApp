@@ -196,7 +196,6 @@ class EarTrainingGame:
         chord_root_note = self.key + 60
         chord_waveform = generate_chord(chord_root_note, 2, self.mode, sample_rate=44100)
         duration = self.difficulty["duration"]
-        print(midi_test_notes_list)
         concatenated_waveform = np.array([], dtype=np.int16)
         for midi_note in midi_test_notes_list:
             frequency = midi_to_frequency(midi_note)
@@ -204,6 +203,22 @@ class EarTrainingGame:
             concatenated_waveform = np.concatenate((concatenated_waveform, note_waveform))
         
         # Append silence between chord and test sequence
+        silence_waveform = self.generate_silence(silence_duration)
+        final_waveform = np.concatenate((chord_waveform, silence_waveform, concatenated_waveform))
+        
+        # Apply fade-in to the beginning of chord waveform
+        fade_in_duration = 0.1  # Adjust fade-in duration as needed
+        fade_in_samples = int(fade_in_duration * 44100)
+        fade_in_curve = np.linspace(0, 1, fade_in_samples, dtype=np.float32)
+        chord_waveform[:fade_in_samples] = (chord_waveform[:fade_in_samples] * fade_in_curve).astype(np.int16)
+
+        # Apply fade-out to the end of chord waveform
+        fade_out_duration = 0.1  # Adjust fade-out duration as needed
+        fade_out_samples = int(fade_out_duration * 44100)
+        fade_out_curve = np.linspace(1, 0, fade_out_samples, dtype=np.float32)
+        chord_waveform[-fade_out_samples:] = (chord_waveform[-fade_out_samples:] * fade_out_curve).astype(np.int16)
+        
+        # Concatenate fade-in/fade-out chord with silence and note waveforms
         silence_waveform = self.generate_silence(silence_duration)
         final_waveform = np.concatenate((chord_waveform, silence_waveform, concatenated_waveform))
 
@@ -302,7 +317,7 @@ class EarTrainingGame:
     def generate_reference_cadence(self):
         """Generate a reference cadence based on a given key."""
         key_note = self.solfege_to_midi['do'] + self.key  # Calculate the base note of the key
-        dominant = (key_note - 5, key_note - 1, key_note + 2)  # Calculate dominant chord notes
+        dominant = (key_note - 5, key_note - 1, key_note + 2)  # Calculate dominant f notes
         tonic = (key_note, key_note + 4, key_note + 7)  # Calculate tonic chord notes
         return {'dominant': dominant, 'tonic': tonic}  # Return both chords as a dictionary
     
